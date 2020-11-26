@@ -1,0 +1,7 @@
+include VERSION
+include LICENSE
+include README.md
+include HISTORY.md
+
+recursive-include b_cfn_elasticsearch_cloner *.py
+recursive-include b_cfn_elasticsearch_cloner *.txt
