@@ -35,7 +35,7 @@ setup(
         "aws-cdk.aws_kms>=1.54.0,<2.0.0",
         "aws-cdk.aws_iam>=1.54.0,<2.0.0",
         "b_elasticsearch_layer>=0.0.1,<1.0.0",
-        "b_cfn_elasticsearch_index>=0.0.2,<1.0.0",
+        "b_cfn_elasticsearch_index>=0.0.3,<1.0.0",
     ],
     author="Ignas Kiela",
     author_email="ignas.kiela@biomapas.com",
