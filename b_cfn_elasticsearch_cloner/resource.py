@@ -46,7 +46,7 @@ class ElasticsearchCloner(Construct):
             layers=[elasticsearch_layer],
             log_retention=RetentionDays.ONE_MONTH,
             memory_size=128,
-            timeout=Duration.minutes(20)
+            timeout=Duration.minutes(20),
             role=Role(
                 scope=self,
                 id="InitialClonerFunctionRole",
