@@ -8,7 +8,7 @@ from aws_cdk.aws_lambda_event_sources import DynamoEventSource
 from aws_cdk.aws_logs import RetentionDays
 from aws_cdk.core import Construct, CustomResource, Duration, RemovalPolicy
 from b_cfn_elasticsearch_index.resource import ElasticsearchIndexResource
-from b_elasticsearch_layer.layer import Layer as ElasticsearchLayer
+from b_elasticsearch_layer.layer import Layer as BElasticsearchLayer
 
 from b_cfn_elasticsearch_cloner.cloner_source import root as cloner_root
 from b_cfn_elasticsearch_cloner.initial_cloner_source import root as initial_cloner_root
@@ -33,7 +33,7 @@ class ElasticsearchCloner(Construct):
     ) -> None:
         super().__init__(scope=scope, id=id)
 
-        elasticsearch_layer = ElasticsearchLayer(scope=self, name=f"{id}ElasticsearchLayer")
+        elasticsearch_layer = BElasticsearchLayer(scope=self, name=f"{id}ElasticsearchLayer")
 
         initial_cloner_function = SingletonFunction(
             scope=self,
@@ -46,7 +46,7 @@ class ElasticsearchCloner(Construct):
             layers=[elasticsearch_layer],
             log_retention=RetentionDays.ONE_MONTH,
             memory_size=128,
-            timeout=Duration.minutes(20),
+            timeout=Duration.minutes(15),
             role=Role(
                 scope=self,
                 id="InitialClonerFunctionRole",
