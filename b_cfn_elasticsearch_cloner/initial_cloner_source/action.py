@@ -87,7 +87,7 @@ class Action:
 
     def update(self) -> Tuple[Optional[Dict[Any, Any]], Optional[str]]:
         """
-        If DynamoDB table has changed, clone the data again, othervise do nothing.
+        Clones the existing DynamoDB data to the Elasticsearch index, since one of them has changed.
 
         :return: A tuple containing two items:
             1. Custom data to return back to CloudFormation service.
@@ -95,13 +95,7 @@ class Action:
         """
         logger.info(f"Initiating resource update with these parameters: {json.dumps(self.__parameters)}.")
 
-        # If the data source has changed.
-        if self.__old_parameters["DynamodbTableName"] != self.TABLE_NAME:
-            return self.create()
-
-        dynamodb_table = dynamodb.Table(self.TABLE_NAME)
-
-        return {"PrimaryKeyField": self.__get_dynamodb_primary_key(dynamodb_table)}, None
+        return self.create()
 
     def delete(self) -> Tuple[Optional[Dict[Any, Any]], Optional[str]]:
         """
