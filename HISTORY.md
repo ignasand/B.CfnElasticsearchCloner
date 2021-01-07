@@ -1,5 +1,9 @@
 # Release history
 
+
+### 0.0.4
+* Always clone on update.
+
 ### 0.0.3
 * Fix initial cloner lambda timeout.
   
