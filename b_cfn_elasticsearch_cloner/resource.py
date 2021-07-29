@@ -155,6 +155,66 @@ class ElasticsearchCloner(Construct):
             retry_attempts=10,
         )
 
+        cloner_inline_policies = {
+            'LogsPolicy': PolicyDocument(
+                statements=[
+                    PolicyStatement(
+                        actions=[
+                            'logs:CreateLogGroup',
+                            'logs:CreateLogStream',
+                            'logs:PutLogEvents',
+                            'logs:DescribeLogStreams',
+                        ],
+                        resources=['arn:aws:logs:*:*:*'],
+                        effect=Effect.ALLOW,
+                    )
+                ]
+            ),
+            'ElasticsearchPolicy': PolicyDocument(
+                statements=[
+                    PolicyStatement(
+                        actions=[
+                            'es:ESHttpDelete',
+                            'es:ESHttpGet',
+                            'es:ESHttpHead',
+                            'es:ESHttpPatch',
+                            'es:ESHttpPost',
+                            'es:ESHttpPut',
+                        ],
+                        resources=[f'{elasticsearch_index.elasticsearch_domain.domain_arn}/*'],
+                        effect=Effect.ALLOW,
+                    )
+                ]
+            ),
+            'DynamodbStreamsPolicy': PolicyDocument(
+                statements=[
+                    PolicyStatement(
+                        actions=[
+                            'dynamodb:DescribeStream',
+                            'dynamodb:GetRecords',
+                            'dynamodb:GetShardIterator',
+                            'dynamodb:ListStreams',
+                        ],
+                        resources=[dynamodb_stream_arn],
+                        effect=Effect.ALLOW,
+                    )
+                ]
+            ),
+        }
+
+        if sagemaker_arn:
+            cloner_inline_policies['SagemakerPolicy'] = PolicyDocument(
+                statements=[
+                    PolicyStatement(
+                        actions=[
+                            'sagemaker:InvokeEndpoint'
+                        ],
+                        resources=[sagemaker_arn],
+                        effect=Effect.ALLOW
+                    )
+                ]
+            )
+
         cloner_function = Function(
             scope=self,
             id='ClonerFunction',
@@ -178,63 +238,7 @@ class ElasticsearchCloner(Construct):
                 scope=self,
                 id='ClonerFunctionRole',
                 assumed_by=ServicePrincipal('lambda.amazonaws.com'),
-                inline_policies={
-                    'LogsPolicy': PolicyDocument(
-                        statements=[
-                            PolicyStatement(
-                                actions=[
-                                    'logs:CreateLogGroup',
-                                    'logs:CreateLogStream',
-                                    'logs:PutLogEvents',
-                                    'logs:DescribeLogStreams',
-                                ],
-                                resources=['arn:aws:logs:*:*:*'],
-                                effect=Effect.ALLOW,
-                            )
-                        ]
-                    ),
-                    'ElasticsearchPolicy': PolicyDocument(
-                        statements=[
-                            PolicyStatement(
-                                actions=[
-                                    'es:ESHttpDelete',
-                                    'es:ESHttpGet',
-                                    'es:ESHttpHead',
-                                    'es:ESHttpPatch',
-                                    'es:ESHttpPost',
-                                    'es:ESHttpPut',
-                                ],
-                                resources=[f'{elasticsearch_index.elasticsearch_domain.domain_arn}/*'],
-                                effect=Effect.ALLOW,
-                            )
-                        ]
-                    ),
-                    'DynamodbStreamsPolicy': PolicyDocument(
-                        statements=[
-                            PolicyStatement(
-                                actions=[
-                                    'dynamodb:DescribeStream',
-                                    'dynamodb:GetRecords',
-                                    'dynamodb:GetShardIterator',
-                                    'dynamodb:ListStreams',
-                                ],
-                                resources=[dynamodb_stream_arn],
-                                effect=Effect.ALLOW,
-                            )
-                        ]
-                    ),
-                    'SagemakerPolicy': PolicyDocument(
-                        statements=[
-                            PolicyStatement(
-                                actions=[
-                                    'sagemaker:InvokeEndpoint'
-                                ],
-                                resources=[sagemaker_arn],
-                                effect=Effect.ALLOW
-                            )
-                        ]
-                    ),
-                },
+                inline_policies=cloner_inline_policies,
                 description='Role for DynamoDB Cloner Function',
             ),
             timeout=Duration.seconds(30),
